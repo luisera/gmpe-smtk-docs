@@ -87,3 +87,12 @@ sympy-plots-for-*.tex/
 
 # xindy
 *.xdy
+
+# VIM
+*.swp
+
+# Mac
+*.DS_Store
+
+# TexPad
+*.texpadtmp
