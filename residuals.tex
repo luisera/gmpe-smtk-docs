@@ -1,21 +1,500 @@
 \section{GMPE Residuals}
 \label{sec:residuals}
 
+\subsection{Definition of the GMPE Residuals}
+
+Arguably one of the most critical processes in GMPE selection, and GMPE weighting in an epistemic uncertainty analysis, is the comparison of the GMPEs against set of ground motions for the region of application. These analyses can serve several purposes. The first is to understand the extent to which the GMPE of interest can represents the local properties of source, path and site scaling of the ground motion. In modelling both the expected ground motion and the aleatory varibility, each GMPE is a probability distribution in which a ground motion $y_{ij}$ at recorded location $j$, originating from event $i$, is characteristed by a lognormal distribution:
+
+\begin{equation}
+\log y_{ij} = \mu \left( {m_i, r_{ij}, \mathbf{\theta_{ij}}} \right) + z_{T, ij}\sigma_T
+\label{eq:gmpe_total}
+\end{equation}
+
+\noindent where $\mu \left( {m_i, r_{ij}, \mathbf{\theta_{ij}}} \right)$ is the expected ground motion from an event of magnitude $m_i$, recorded at a distance $r_{ij}$, where $\mathbf{\theta_{ij}}$ corresponds to various other model parameters relevant to the model in question (e.g., site amplification, basin response, hanging wall scaling etc.). The total uncertainty ($z_{T, ij}$) is therefore modelled as a normal distribution with a mean of zero and a standard deviation of $\sigma_T$. The term $z_{T, ij}$ is therefore the ``total'' normalised residual of the $j^{th}$ recording from the $i^{th}$ event:
+
+\begin{equation}
+z_{T, ij} = \frac{\log \left( {y_{ij}} \right) - \mu \left( {m_i, r_{ij}, \mathbf{\theta_{ij}}} \right)}{\sigma_T}
+\label{eq:total_residual}
+\end{equation}
+
+For most GMPEs, however, the a random effects regression process is used to derive the coefficients of the model. This divides the total residual term into an inter-event component $\delta_{E, i}$ and an the intra-event component $\delta_{A, ij}$, such that equation \label{eq:gmpe} can be written as:
+
+\begin{equation}
+\log y_{ij} = \mu \left( {m_i, r_{ij}, \mathbf{\theta_{ij}}} \right) +  \delta_{E, i} + \delta_{A, ij}
+\label{eq:gmpe_randeff}
+\end{equation}
+
+The inter-event residual is normally distributed with a mean of zero and a standard deviation of $\tau$, and likewise the intra-event residual is normally distributed with a zero mean and a standard deviation of $\sigma$. 
+Consequently equation \ref{eq:gmpe_randeff} can be finally written as:
+
+\begin{equation}
+\log y_{ij} = \mu \left( {m_i, r_{ij}, \mathbf{\theta_{ij}}} \right) +  z_{E,i}\tau + z_{A, ij}\sigma
+\label{eq:gmpe_re_resid}
+\end{equation}
+
+Where $z_{E, i}$ and $z_{A_ ij}$ are the normalised inter- and intra-event residuals respectively. Following the random effects definition of cite{AbrhamsonYoungs1992}, the inter-event term is defined via:
+
+\begin{equation}
+\delta_{E, i} = z_{E, i} \tau = \frac{\tau^2 \sum\limits_{j = 1}^{n_i} \left( {y_{ij} - \mu \left( {m_i, r_{ij}, \mathbf{\theta_{ij}}} \right)}\right)}{n_i \tau^2 + \sigma^2}
+\label{eq:inter_res}
+\end{equation}
+
+\noindent where $n_i$ is the number of records observed from event $i$. The intra-event residual the follows:
+
+\begin{equation}
+\delta_{A, ij} = z_{A, ij}\sigma = \log y_{ij} - \mu \left( {m_i, r_{ij}, \mathbf{\theta_{ij}}} \right) - z_{E, i}\tau
+\label{eq:intra_res}
+\end{equation}
+
+\subsection{Residual analysis in the GMPE-SMTK}
+
+The GMPE-SMTK offers the ability to compare observed ground motions with the GMPE model predictions using the GMPE implementations found inside OpenQuake. This is a particularly powerful tool as it permits, possibly for the first time, a hazard modeller to undertake the GMPE comparison using the exact same GMPE implementation found inside the seismic hazard software. This ensures consistency between, for example, the definitions of the distance metrics, as well as allowing the GMPE-SMTK to inherit the comprehensive test coverage that is fundamental to the OpenQuake software. 
+
+Several key sets of tools can be found within the GMPE-SMTK to allow the modeller not only to explore particular features of the GMPE residuals, but also to undertake quantitative analysis of the overall fit of each GMPE to observed strong motion data. All the analyses undertaken will, by default, analyse the total residual, the inter-event residual and the intra-event residual, following the approach described in cite(StaffordEtAl2008). If the GMPE in question does not provide coefficients to define the inter- and intra-event residual only the total residual term will be considered.
+
+The GMPE-SMTK provides two sets of tools. The first tool set contains the tools to undertake the analysis of residuals, and/or the model fit. These tools are found in the module \\ \verb=smtk.residuals.gmpe_residuals=. The second set will provide the visualisation and plotting functionalities. These are found in the \verb=smtk.residuals.residual_plotter= module. In the following examples we will refer to these modules as \verb=res= and \verb=rspl= respectively, and they can be imported via:
+
+\begin{python}[frame=single]
+import smtk.residuals.gmpe_residuals as res
+import smtk.residuals.residual_plotter as rspl
+\end{python}
+
+To generate a set of ground motion residuals the tools require three pieces of information: a ground motion database (as an instance of the \verb=smtk.sm_database.GroundMotionDatabase= class), a list of the required GMPEs and a list of the required intensity measures. In the following examples we consider a set of strong motion records recorded in Italy and compare four GMPEs (BooreAtkinson2008, AkkarBommer2010, AkkarCagnan2010, AkkarEtAl2014) and four intensity measures (PGA, $Sa \left( {0.2 s} \right)$, $Sa \left( {1.0 s} \right)$, $Sa \left( {2.0 s} \right)$). Typically, these will be set-up as follows:
+
+\begin{python}[frame=single]
+# Import CPickle
+import cPickle
+# Import the database
+sm_database = cPickle.loads(open("path/to/metadata.pkl", "r"))
+# Define the list of GMPEs
+gmpe_list = ["BooreAtkinson2008",
+             "AkkarBommer2010",
+             "AkkarCagnan2010",
+             "AkkarEtAlRjb2014"]
+# Define the list of intensity measures
+imt_list = ["PGA", "SA(0.2)", "SA(1.0)", "SA(2.0)"] 
+\end{python}
+
+For undertaking simple analysis of residuals simply run:
+
+\begin{python}[frame=single]
+# Set-up the residual calculator
+resid1 = res.Residuals(gmpe_list, imts)
+# Run the residual calculator
+resid1.get_residuals(sm_database)
+\end{python}
+
+When run, the class \verb=Residuals= will hold an attribute \verb=residuals=, which will contain a set of nested python dictionaries in which the corresponding residual values are stored. To retrieve the residual values for a specific GMPE and intensity measure then type:
+
+\begin{python}
+res_data = resid1.residuals["GMPE Name"]["IM Name"]["Type"]
+\end{python}
+
+where, ``GMPE Name'' is the name of the GMPE specified in the input list, ``IM Name'' is the name of the intensity measure (as specified in the input list) and ``Type'' is one of ``Total'', ``Inter event'' or ``Intra event'' (note the syntax - the keys are case sensitive). The residuals will then be a single vector of residual values for that specific GMPE, IM and residual type.
+  
 
 \section{Basic Trends in Residuals}
 \label{sec:residual_trends}
 
+One of the simplest means of comparing observations with the models is via the use of histograms of the residual terms $z_T$, $z_{E, i}$ and $z_A{ij}$ from the observed records with respect to the GMPE. These help identify the general tendency of the GMPE with respect to the records. From the definitions described in \ref{sec:residuals} it follows that for a GMPE to represent a good fit to a set of records each of the normalised residual distributions should match closely to a standard normal distribution (i.e with a mean of zero and standard deviation of 1.0). Differences in the mean of the residuals may indicate a tendency for the GMPE to predict higher or lower values than those observed in records, whilst differences in the standard deviation may suggest an over- or underestimation of the variability of the ground motions.
+
+Basic histograms of the residuals of a GMPE can be created using the \verb=rspl= tool \verb=ResidualPlot=. For the GMPEs listed in previously the following command will produce the four sets of histogram plots for the trend in PGA residuals shown in Figure \ref{fig:pga_resids} and, for $Sa \left( {1.0 s} \right)$ using Akkar et al (2014) only in Figure \ref{fig:sa1_res_akkar2014}.
+
+\begin{python}
+# Boore & Atkinson (2008)
+rspl.ResidualPlot(resid1, "BooreAtkinson2008", "PGA",
+                  filename="path/to/image.png",
+                  filetype="png")
+# Akkar & Bommer (2010)
+rspl.ResidualPlot(resid1, "AkkarBommer2010", "PGA")
+# Akkar & Cagnan (2010)
+rspl.ResidualPlot(resid1, "AkkarCagnan2010", "PGA")
+# Akker et al. (2014)
+rspl.ResidualPlot(resid1, "AkkarEtAlRjb2014", "PGA")
+# Akker et al. (2014) - Sa (1.0 s)
+rspl.ResidualPlot(resid1, "AkkarEtAlRjb2014", "Sa(1.0)")
+\end{python}
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/BA2008_Residuals_PGA.pdf}
+      \caption{citeBooreAtkinson2008 model}
+      \label{fig:pga_res_ba2008}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/AB2010_Residuals_PGA.pdf}
+      \caption{citeAkkarBommer2010 model}
+      \label{fig:pga_res_ab2010}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/AC2010_Residuals_PGA.pdf}
+      \caption{citeAkkarCagnan2010 model}
+      \label{fig:pga_res_ac2010}
+  \end{subfigure}
+      \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/Akkar2014_Residuals_PGA.pdf}
+     \caption{citeAkkarEtAl2014 model}
+      \label{fig:pga_res_akkar2014}
+  \end{subfigure}
+  \caption{PGA residual distribution for the record set. The grey line indicates the probability density function fit to the data, whilst the black line indicates the standard normal density function}
+  \label{fig:pga_resids}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+		\includegraphics[width=0.6\textwidth]{./figures/residuals/Akkar2014_Residuals_Sa1.pdf}
+	\caption{PGA residual distribution for the record set using the Akkar et al. (2014) GMPE}
+	\label{fig:sa1_res_akkar2014}
+\end{figure}
+
+Figures \ref{fig:pga_resids} and \ref{fig:sa1_res_akkar2014} shows a relatively discernible set of trends. Consider just the \cite{boore2008} model for PGA (Figure \ref{fig:pga_res_ba2008}). Each of the residuals have a mean less than zero, significantly so in the case of the inter-event residual. This indicates that in general the \cite{boore2008} model is predicts higher ground motions than those observed in the records and most of this can be attributed to the inter-event term. The distributions also show a greater spread than expected from the model, as demonstrated by the standard deviation greater than unity. In this case it is the intra-event residuals that show a greater spread than expected, whilst spread in the inter-event residuals is in better agreement with the model. In contrast the Akkar et al. (2014)  GMPE (from which the current records form part of the generating data set) show a much closer agreement with the records (as expected). It is seen that that the distribution of the normalised total residuals is very close to the standard normal distribution; a trend that is matched in the intra-event residuals. Similarly in the inter-event residuals the mean value is close to zero, and only the spread of the model shows a difference, in this case showing a smaller variance than expected from the model. This is to be expected as the current dataset is based on exclusively Italian records (predominantly extensional events, with only a few thrust or oblique slip records), whereas the GMPE was fit to a full set of European and Middle Eastern records, thus incorporating a greater variability of mechanism types than just the Italian subset. The same trend can be seen in the residuals for $Sa \left( {1.0 s} \right)$. 
+
 \section{The Likelihood Model (TOCITE Scherbaum et al., 2004)}
 \label{sec:lh_model}
+
+The basic residual trends can help understand where biases may be present in the model with respect to the record set, but they do not necessarily provide a quantitative indication of the total fit of the model to the record. One possibility to do this (others will presented later in the chapter) is to consider the overall goodness-of-fit of the model to the predictions. SCHERBAUM ETAL 2004 consider the probability that the absolute value of a random sample from the normalised distribution to fall into the interval between the modulus of a particular observation $|z_0|$ and infinity.
+
+\begin{equation}
+u \left( {z_0} \right) = \frac{1}{2} Erf\left( {\frac{z_0}{\sqrt{2}}, \infty} \right)
+\end{equation}
+
+The total ``likelihood'' of a particular value is given by:
+
+\begin{equation}
+LH \left( {|z_0|} \right) = 2 \cdot u \left( {|z_0|} \right) = Erf \left( {\frac{|z_0|}{\sqrt{2}}, \infty} \right)
+\end{equation}
+
+As indicated in SCHERBAUM ETAL 2004 the the $LH$ value should reach a value of $1$ for $|z_0|=0$ (i.e. the mean of the distribution), and should tend to zero for observations further away from the mean. Therefore, if the model assumptions are matched exactly by a set of observations then the $LH \left( {|z_0|} \right)$ values should be distributed evenly between 0 and 1, with a median value of 0.5. 
+
+The GMPE-SMTK can produce histograms of the $LH$ value for the ground motion observations using the \verb=res.Likelihood= and \verb=rspl.LikelihoodPlot= tools. The \verb=res.Likeihood= tool operates in the same manner as the \verb=res.Residuals= tool; therefore to run the likelihood analysis one follows the same approach:
+
+\begin{python}[frame=single]
+# Set-up the likelihood calculator
+lh1 = res.Likelihood(gmpe_list, imts)
+# Run the residual calculator
+lh1.get_residuals(sm_database)
+\end{python}
+
+Histograms of the $LH$ values (and their median estimates) for the four GMPEs for PGA are shown in Figure \ref{fig:pga_lh}, and for only Akkar et al. (2014) for $Sa \left( {1.0 s} \right)$ in Figure \ref{fig:sa1_lh_akkar2014} . These can be generated with the following command:
+
+\begin{python}
+# Boore & Atkinson (2008)
+rspl.LikelihoodPlot(lh1, "BooreAtkinson2008", "PGA",
+                    filename="path/to/image.png",
+                    filetype="png")
+# Akkar & Bommer (2010)
+rspl.LikelihoodPlot(lh1, "AkkarBommer2010", "PGA")
+# Akkar & Cagnan (2010)
+rspl.LikelihoodPlot(lh1, "AkkarCagnan2010", "PGA")
+# Akker et al. (2014)
+rspl.LikelihoodPlot(lh1, "AkkarEtAlRjb2014", "PGA")
+# Akker et al. (2014) - Sa (1.0 s)
+rspl.LikelihoodPlot(lh1, "AkkarEtAlRjb2014", "Sa(1.0)")
+\end{python}
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/BA2008_LH_PGA.pdf}
+      \caption{citeBooreAtkinson2008 model}
+      \label{fig:pga_lh_ba2008}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/AB2010_LH_PGA.pdf}
+      \caption{citeAkkarBommer2010 model}
+      \label{fig:pga_lh_ab2010}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/AC2010_LH_PGA.pdf}
+      \caption{citeAkkarCagnan2010 model}
+      \label{fig:pga_lh_ac2010}
+  \end{subfigure}
+      \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/Akkar2014_LH_PGA.pdf}
+     \caption{citeAkkarEtAl2014 model}
+      \label{fig:pga_lh_akkar2014}
+  \end{subfigure}
+  \caption{$LH$ distribution for the observed PGA set}
+  \label{fig:pga_lh}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+		\includegraphics[width=0.6\textwidth]{./figures/residuals/Akkar2014_LH_Sa1.pdf}
+	\caption{$LH$ distribution for the observed $Sa \left( {1.0 s} \right)$ set using the Akkar et al. (2014) GMPE}
+	\label{fig:sa1_lh_akkar2014}
+\end{figure}
+
+In general the trends seen in Figure \ref{fig:pga_resids} are visible in the $LH$ histograms in the manner described in SCHERBAUM ETAL 2004. In the \cite{boore2008} model intra-event and total residuals showed a greater variance than predicted by the GMPE, a trend that tends to result in $LH$ values closer to zero than 1. For the Akkar et al. (2014) GMPE both the total and inter-event residuals are generally evenly distributed between 0 and 1, with a median of close to 0.5, indicating a good agreement between the model and observations. The inter-event residuals show a smaller range than that expected by the model and so the $LH$ values are closer to 1.0 (the distances from the mean are smaller than expected). 
 
 \section{Residual Trends with Predictor Variables}
 \label{sec:predictor_trends}
 
+The analysis of the residuals shown in sections \ref{sec:residual_trends} and \ref{sec:lh_model} provide useful insights into the overall fit of a GMPE to a set of observations. They do not necessarily provide a clear indication as to which elements of the model contribute to the misfit. Or, to frame it differently, they do not necessarily indicate where the GMPEs may be biased with respect to the predictor variables of the observations. To analysis this it is necessary to understand if, and where, the GMPE residuals show clear trends with respect to the predictor variables. These trends can indicate those elements of the source/site scaling and attenuation process for which the GMPE is biased.
+
+The GMPE-SMTK offers several methods to visualise the trends of the GMPE residuals with the following predictor variables:
+\begin{enumerate}
+\item Magnitude
+\item Distance
+\item $V_{S30}$
+\item Hypocentral Depth
+\end{enumerate}
+
+\subsubsection{Trends with Magnitude}
+
+To view the trends with magnitude for a set of ground motion residuals the \verb=rspl= toolset contains the function \verb=ResidualWithMagnitude=. Figure \ref{fig:mag_resid} shows the residual trends in magnitude for the \cite{boore2008} and Akkar et al. (2014) GMPEs for PGA and $Sa \left( {1.0 s} \right)$. These figures were generated with the following commands:
+
+\begin{python}[frame=single]
+# Boore & Atkinson (2008)  - PGA
+rspl.ResidualWithMagnitude(resid1,  # Residuals
+                           "BooreAtkinson2008",  # GMPE
+                           "PGA",   # Intensity Measure
+                           filename="path/to/image.png",
+                           filetype="png")
+# Akkar et al. (2014)  - PGA
+rspl.ResidualWithMagnitude(resid1, "AkkarEtAlRjb2014", "PGA") 
+# Boore & Atkinson (2008)  - Sa (1.0)
+rspl.ResidualWithMagnitude(resid1, "BooreAtkinson2008",
+                          "Sa(1.0)") 
+# Akkar et al. (2014)  - Sa (1.0)
+rspl.ResidualWithMagnitude(resid1, "AkkarEtAlRjb2014",
+                          "Sa(1.0)")                         
+\end{python}
+
+As shown in Figure \ref{fig:mag_resid}, and in subsequent figures, a linear model is fit to the observed residual trends. The significance of the trend is measured via the ``p-value'', reported in the figure header. This indicates the probability observing the measured trend in the residuals assuming a null hypothesis of no trend (i.e. zero gradient). Consequently a smaller ``p-value'' indicates a more significant trend, assuming (loosely) that statistically significant trends might be those with a ``p-value'' smaller than 0.1. If the magnitude scaling is largely unbiased with respect to the GMPE it is expected that no significant linear trend can be observed the plot of residuals with magnitude. This is the case for the Akkar et al. (2014) GMPE in which no statistically significant trend is observed with respect to magnitude. For the Boore and Atkinson (2008) model a statistically significant trend is visible in the inter-event residuals. For PGA this trend is negative, suggesting that the GMPE is predicting higher than observed ground motions for the larget magnitudes, whilst for $Sa \left( {1.0 s} \right)$ the opposite is true, indicating the GMPE is predicting lower than expected ground motions at higher magnitudes.
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/BA2008_Magnitude_PGA.pdf}
+      \caption{citeBooreAtkinson2008 model - PGA}
+      \label{fig:pga_mag_ba2008}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/Akkar2014_Magnitude_PGA.pdf}
+      \caption{citeAkkarEtAl2014 model - PGA}
+      \label{fig:pga_mag_akkar2014}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/BA2008_Magnitude_Sa1.pdf}
+      \caption{citeBooreAtkinson2008 model - $Sa \left( {1.0 s} \right)$}
+      \label{fig:sa1_mag_ba2008}
+  \end{subfigure}
+      \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/Akkar2014_Magnitude_Sa1.pdf}
+     \caption{citeAkkarEtAl2014 model - $Sa \left( {1.0 s} \right)$}
+      \label{fig:sa1_mag_akkar2014}
+  \end{subfigure}
+  \caption{Residual trends with magnitude for the observed PGA and $Sa \left( {1.0 s} \right)$ records}
+  \label{fig:mag_resid}
+\end{figure}
+
+
+\subsubsection{Trends with Distance}
+
+To observe how well the GMPE compares to the distance attenuation properties in a set of records the \verb=rspl= tools provide the method \verb=ResidualWithDistance=. Plots of residuals with distance for the same GMPEs and intensity measures considered in Figure \ref{fig:mag_resid} are shown in Figure \ref{fig:dist_resid}. These are generated using the following commands:
+
+\begin{python}[frame=single]
+# Boore & Atkinson (2008)  - PGA
+rspl.ResidualWithDistance(resid1,  # Residuals
+                           "BooreAtkinson2008",  # GMPE
+                           "PGA",   # Intensity Measure
+                           distance_type="rjb"
+                           plot_type="linear",
+                           filename="path/to/image.png",
+                           filetype="png")
+# Akkar et al. (2014)  - PGA
+rspl.ResidualWithDistance(resid1, "AkkarEtAlRjb2014",
+                          "PGA", distance_type="rjb",
+                          plot_type="linear") 
+# Boore & Atkinson (2008)  - Sa (1.0)
+rspl.ResidualWithDistance(resid1, "BooreAtkinson2008",
+                          "Sa(1.0)", distance_type="rjb",
+                          plot_type="linear") 
+# Akkar et al. (2014)  - Sa (1.0)
+rspl.ResidualWithDistance(resid1, "AkkarEtAlRjb2014",
+                          "Sa(1.0)", distance_type="rjb",
+                          plot_type="linear")                         
+\end{python}
+
+The input arguments are identical to the \verb=ResidualwithMagnitude= tool, with the exception of the \verb=distance_type= and \verb=plot_type= keywords. The \verb=distance_type= determines the distance measure used for visualisation, whilst the \verb=plot_type= keyword indicates whether to plot the distance values on a logarithmic axis (``\verb=log='') or a linear axis (``\verb=linear=''). A logarithmic axis is preferred by default.
+
+In contrast to the residual trends with magnitude, it is evident in Figure \ref{fig:dist_resid} that statistically significant trends with distance exist for both GMPEs. This can be clearly seen in the intra-event residual, which shows a negative trend in the residuals, a trend that is more pronounced for the Boore \& Atkinson (2008) model. This indicates that both models underestimate the degree of attenuation in the ground motions observed in Italy, as both models predict higher ground motion at greater distances than those observed in the strong motion records. 
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/BA2008_Distance_PGA.pdf}
+      \caption{citeBooreAtkinson2008 model - PGA}
+      \label{fig:pga_dist_ba2008}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/Akkar2014_Distance_PGA.pdf}
+      \caption{citeAkkarEtAl2014 model - PGA}
+      \label{fig:pga_dist_akkar2014}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/BA2008_Distance_Sa1.pdf}
+      \caption{citeBooreAtkinson2008 model - $Sa \left( {1.0 s} \right)$}
+      \label{fig:sa1_dist_ba2008}
+  \end{subfigure}
+      \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/Akkar2014_Distance_Sa1.pdf}
+     \caption{citeAkkarEtAl2014 model - $Sa \left( {1.0 s} \right)$}
+      \label{fig:sa1_dist_akkar2014}
+  \end{subfigure}
+  \caption{Residual trends with Joyner-Boore distance for the observed PGA and $Sa \left( {1.0 s} \right)$ records}
+  \label{fig:dist_resid}
+\end{figure}
+
+\subsubsection{Trends with $V_{S30}$}
+
+The usage of the \verb=rspl= tool to visualise residual trends with $V_{S30}$ (\verb=ResidualWithVs30=) is generally the same as the tools for the magnitude and distance. So for the same GMPEs and intensity measures considered previously, the following commands are used to produce the plot of residuals against $V_{S30}$ for the same record set, shown in Figure \ref{fig:vs30_resid}:
+ 
+ \begin{python}[frame=single]
+# Boore & Atkinson (2008)  - PGA
+rspl.ResidualWithVs30(resid1,  # Residuals
+                      "BooreAtkinson2008",  # GMPE
+                      "PGA",   # Intensity Measure
+                      filename="path/to/image.png",
+                      filetype="png")
+# Akkar et al. (2014)  - PGA
+rspl.ResidualWithVs30(resid1, "AkkarEtAlRjb2014", "PGA") 
+# Boore & Atkinson (2008)  - Sa (1.0)
+rspl.ResidualWithVs30(resid1, "BooreAtkinson2008", "Sa(1.0)") 
+# Akkar et al. (2014)  - Sa (1.0)
+rspl.ResidualWithVs30(resid1, "AkkarEtAlRjb2014", "Sa(1.0)")                         
+\end{python}
+
+Once again in both the GMPEs and for both intensity measures there are statistically significant trends in the residuals with $V_{S30}$. In most cases the trends are positive, with a negative intercept, indicating that the GMPEs are predicting higher than expected ground motions on softer soils (i.e. lower $V_{s30}$) for the selected stations.
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/BA2008_Vs30_PGA.pdf}
+      \caption{citeAkkarEtAl2014 model - PGA}
+      \label{fig:pga_vs30_ba2008}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/Akkar2014_Vs30_PGA.pdf}
+      \caption{citeAkkarBommer2010 model - PGA}
+      \label{fig:pga_vs30_akkar2014}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/BA2008_Vs30_Sa1.pdf}
+      \caption{citeBooreAtkinson2008 model - $Sa \left( {1.0 s} \right)$}
+      \label{fig:sa1_vs30_ba2008}
+  \end{subfigure}
+      \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/Akkar2014_Vs30_Sa1.pdf}
+     \caption{citeAkkarEtAl2014 model - $Sa \left( {1.0 s} \right)$}
+      \label{fig:sa1_vs30_akkar2014}
+  \end{subfigure}
+  \caption{Residual trends with $V_{S30}$ for the observed PGA and $Sa \left( {1.0 s} \right)$ records}
+  \label{fig:vs30_resid}
+\end{figure}
+
+\subsubsection{Trends with Hypocentral Depth}
+
+Finally, the \verb=rspl= tools contain the method \verb=ResidualWithDepth= to show the trend in the GMPE residuals with \emph{hypocentral} depth. As with the previous residual plotting tools, the commands below will produce plots similar to those shown in Figure \ref{fig:depth_resid}:
+
+ \begin{python}[frame=single]
+# Boore & Atkinson (2008)  - PGA
+rspl.ResidualWithDepth(resid1,  # Residuals
+                      "BooreAtkinson2008",  # GMPE
+                      "PGA",   # Intensity Measure
+                      filename="path/to/image.png",
+                      filetype="png")
+# Akkar et al. (2014)  - PGA
+rspl.ResidualWithDepth(resid1, "AkkarEtAlRjb2014", "PGA") 
+# Boore & Atkinson (2008)  - Sa (1.0)
+rspl.ResidualWithDepth(resid1, "BooreAtkinson2008", "Sa(1.0)") 
+# Akkar et al. (2014)  - Sa (1.0)
+rspl.ResidualWithDepth(resid1, "AkkarEtAlRjb2014", "Sa(1.0)")                         
+\end{python}
+
+In this case both GMPEs show statistically significant negative trends in the residual with respect to depth. As expected, it is the inter-event residual where these trends are evident, and that control the trends in the total residual. This indicates that the GMPEs are predicting higher ground motions for deeper events than those observed. For the two GMPEs considered, this result is somewhat expected as neither have an explicit dependence on a depth predictor variable; hence hypocentral depth is within the aleatory variability of the model. 
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/BA2008_HypoDepth_PGA.pdf}
+      \caption{citeBooreAtkinson2008 model - PGA}
+      \label{fig:pga_depth_ba2008}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/Akkar2014_HypoDepth_PGA.pdf}
+      \caption{citeAkkarBommer2010 model - PGA}
+      \label{fig:pga_depth_akkar2014}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/BA2008_HypoDepth_Sa1.pdf}
+      \caption{citeBooreAtkinson2008 model - $Sa \left( {1.0 s} \right)$}
+      \label{fig:sa1_depth_ba2008}
+  \end{subfigure}
+      \begin{subfigure}[b]{0.49\textwidth}
+      \includegraphics[width=\textwidth]{./figures/residuals/Akkar2014_HypoDepth_Sa1.pdf}
+     \caption{citeAkkarEtAl2014 model - $Sa \left( {1.0 s} \right)$}
+      \label{fig:sa1_depth_akkar2014}
+  \end{subfigure}
+  \caption{Residual trends with hypocentral depth for the observed PGA and $Sa \left( {1.0 s} \right)$ records}
+  \label{fig:depth_resid}
+\end{figure}
+
 \section{Log-likelihood Approach}
 \label{sec:llh}
 
+\begin{python}[frame=single]
+llh_1 = res.LLH(gmpe_list, imt_list)
+llh_1.get_residuals(italy_db_clean)
+ Run LLH analysis
+llh_values, weights = llh_1.get_loglikelihood_values()
+\end{python}
+
+To view the $LLH$ values and weights, it is only necessary to do the following:
+
+\begin{python}
+for gmpe in gmpe_list:
+    print "LLH(%s) = %12.6f Weight = %12.6f" %(gmpe,
+                                               llh_values[gmpe],     
+                                               weights[gmpe])
+\end{python}
+
+\noindent which, for the GMPEs and the strong motion database considered throughout this chapter, returns an output similar to that below:
+
+\begin{verbatim}
+LLH(BooreAtkinson2008) =     3.025793  Weight =     0.175937
+LLH(AkkarBommer2010) =     2.559079  Weight =     0.243138
+LLH(AkkarCagnan2010) =     2.366239  Weight =     0.277909
+LLH(AkkarEtAlRjb2014) =     2.241463  Weight =     0.303015
+\end{verbatim}
+
+
 \section{Euclidean Distance Based Ranking}
 \label{sec:edr}
+
+\begin{python}[frame=single]
+# EDR analysis
+edr1 = res.EDR(gmpe_list, imt_list)
+edr1.get_residuals(italy_db_clean)
+edr_values = edr1.get_edr_values()
+\end{python}
+
+To view the $EDR$ values and weights, it is only necessary to do the following:
+
+\begin{python}
+for gmpe in gmpe_list:
+    print "EDR(%s) = %8.4f (sqrt(kappa) = %8.4f)" %(gmpe,
+        edr_values[gmpe]["EDR"], edr_values[gmpe]["sqrt Kappa"])
+\end{python}
+
+\begin{verbatim}
+EDR(BooreAtkinson2008) =   1.2163 (sqrt(kappa) =   1.1840)
+EDR(AkkarBommer2010) =   1.0990 (sqrt(kappa) =   1.0609)
+EDR(AkkarCagnan2010) =   1.3704 (sqrt(kappa) =   1.1308)
+EDR(AkkarEtAlRjb2014) =   1.0956 (sqrt(kappa) =   1.0889)
+\end{verbatim}
 
 \section{Site Specific Analysis}
 \label{sec:site}

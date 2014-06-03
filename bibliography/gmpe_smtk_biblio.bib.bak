@@ -37,21 +37,6 @@
   timestamp = {2013.05.09}
 }
 
-@ARTICLE{boore2008,
-  author = {Boore, D. M. and Atkinson, G. M.},
-  title = {{Ground-Motion Prediction Equations for the Average Horizontal Component
-	of PGA, PGV, and 5\%-Damped PSA at Spectral Periods between 0.01
-	s and 10.0 s}},
-  journal = {Earthquake Spectra},
-  year = {2008},
-  volume = {24},
-  pages = {99-138},
-  number = {1},
-  month = {February},
-  owner = {marcop},
-  timestamp = {2011.02.10}
-}
-
 @ARTICLE{Crowley_etal2008b,
   author = {Crowley, H. and Stafford, P. J. and Bommer, J. J.},
   title = {Can Earthquake Loss Models be Validated Using Field Observations?},
