@@ -111,7 +111,7 @@ pga, pgv, pgd, vel_x, disp_x = get_peak_measures(time_step,
 
 The response spectrum is one of the most important elements of a ground motion record used in earthquake engineering. The response spectrum provides the peak responses of a set a single-degree-of-freedom (SDOF) oscillators with different natural periods ($T$), and damping ratio $\xi$. The pseudospectral acceleration at a given period $Sa \left({T, \xi} \right)$, and its corresponding pseudospectral velocity and displacements, $Sv \left( {T, \xi} \right)$ and $Sd \left( {T, \xi} \right)$ respectively, are the most widely used means to characterise the ground motion input for a given structure. In addition to the peak values however, it is also useful to have available the acceleration, velocity and displacement response time series of the SDOF oscillators for each natural period. The GMPE-SMTK response spectra tools are designed to return the most comprehensive set of information to describe the SDOF response for each record.
 
-To calculate a response spectrum for a record, two response spectra calculators are currently available: ``Newmark-$\beta$'' and ``Nigam \& Jennings'' (CITE NigamJennings1969).
+To calculate a response spectrum for a record, two response spectra calculators are currently available: ``Newmark-$\beta$'' and ``Nigam \& Jennings'' (\cite{NigamJennings1969}).
 
 These can be called following the process below:
 \begin{python}
@@ -229,7 +229,7 @@ It can be seen from Figures  \ref{fig:newmark_beta} and \ref{fig:nigam_jennings}
 \section{Combining Horizontal Components of Motion}
 \label{sec:horizontal}
 
-For a pair of horizontal records it is necessary to define a spectrum representing the ``horizontal'' component of ground motion. The manner in which the two horizontal components of motion are resolved can be treated in many different ways (cite: Douglas, 2003, ????; Beyer and Bommer etc.). The intensity measure tools contain various methods for combining horizontal response spectra. 
+For a pair of horizontal records it is necessary to define a spectrum representing the ``horizontal'' component of ground motion. The manner in which the two horizontal components of motion are resolved can be treated in many different ways \citep[e.g.][]{Douglas2003, BeyerBommer2006}. The intensity measure tools contain various methods for combining horizontal response spectra. 
 
 The first step in the application of these methods may be to extract the respective response spectra for the two horizontal components. This can be done as follows:
 
@@ -317,7 +317,7 @@ rot_hist_x, rot_hist_y = ims.rotate_horizontal(accel_x,
                                                theta)
 \end{python}
 
-The incorporation of rotational tools permits the toolkit to calculate the ``orientation-dependent'' and ``orientation-independent'' geometric mean of a horizontal pair of records, as described in detail in CITE Boore et al (2006). The two quantities, \verb=GMRotDpp= and \verb=GMRotIpp= respectively, cannot be calculated from the two horizontal response spectra directly as other horizontal measures are. As they require rotation of time-series through non redundant angles, it is necessary to determine the response spectra for each rotation angle.
+The incorporation of rotational tools permits the toolkit to calculate the ``orientation-dependent'' and ``orientation-independent'' geometric mean of a horizontal pair of records, as described in detail in \cite{Boore_etal2006}. The two quantities, \verb=GMRotDpp= and \verb=GMRotIpp= respectively, cannot be calculated from the two horizontal response spectra directly as other horizontal measures are. As they require rotation of time-series through non redundant angles, it is necessary to determine the response spectra for each rotation angle.
 
 To calculate \verb=GMRotDpp= and \verb=GMRotIpp= run:
 

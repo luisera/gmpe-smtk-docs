@@ -25,7 +25,7 @@ from openquake.hazardlib.gsim import get_available_gsims
 get_available_gsims()
 \end{python}
 
-In the examples shown throughout this chapter we consider six GMPES: citeAkkarBommer2010, citeAkkarCagnan2010, site Akkar2014 (Joyner-Boore coefficients), citeBooreAtkinson2008, citeChiouYoungs2008, citeZhaoEtAl2006. We also compare using just four intensity measures: PGA, $Sa \left( {0.2s} \right)$, $Sa \left( {1.0s} \right)$ and $Sa \left( {2.0s} \right)$.
+In the examples shown throughout this chapter we consider six GMPES: \cite{AkkarBommer2010}, \cite{AkkarCagnan2010}, \cite{Akkar_etal2014} (Joyner-Boore coefficients), \cite{boore2008}, \cite{chiou2008}, \cite{Zhao2006}. We also compare using just four intensity measures: PGA, $Sa \left( {0.2s} \right)$, $Sa \left( {1.0s} \right)$ and $Sa \left( {2.0s} \right)$.
 
 
 \section{Trellis Plotting: The (Not So) Simple Way}
@@ -213,7 +213,7 @@ distances["rrup"] = np.sqrt(distances["rjb"] ** 2.0 +
 distances["rx"] = distances["rjb"]
 \end{python}
 
-We need also to specify the spectral periods we wish to use for calculation. In this case, as citeAkkarCagnan2010 is limited to just 2 s period, we limit the period range for comparison so 0.05 s to 2 s.
+We need also to specify the spectral periods we wish to use for calculation. In this case, as \cite{AkkarCagnan2010} is limited to just 2 s period, we limit the period range for comparison so 0.05 s to 2 s.
 
 \begin{python}
 periods = [0.05, 0.075, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15,
@@ -438,7 +438,7 @@ trpl.DistanceSigmaIMTTrellis.from_rupture_model(
 	\label{fig:distance_sigma_trellis_rupt}
 \end{figure}
 
-The rupture-specific configuration allows for the same comparison to take place on the footwall of the rupture, for those GMPE's such as citeChiouYoungs2008 that have hanging wall coefficients. For example, rather than propagating the line at 90$^{\circ}$ from the rupture on the hanging wall, we will place the line at an azimuth of 230$^{\circ}$ from the rupture (i.e. on the footwall):
+The rupture-specific configuration allows for the same comparison to take place on the footwall of the rupture, for those GMPE's such as \cite{chiou2008} that have hanging wall coefficients. For example, rather than propagating the line at 90$^{\circ}$ from the rupture on the hanging wall, we will place the line at an azimuth of 230$^{\circ}$ from the rupture (i.e. on the footwall):
 
 \begin{python}
 sites_line = rupt1.get_target_sites_mesh(maximum_distance=200.0,

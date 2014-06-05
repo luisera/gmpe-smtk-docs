@@ -6,15 +6,15 @@
 \section{Conditional Field Simulation}
 \label{sec:cond_field}
 
-The extraction of the ground motion residuals from a set of observations also opens up the possibility of implementing another type of calculation that is becoming increasingly common in seismic hazard and risk modelling, and that is conditional random field simulation. These are randomly generated fields of ground motion residuals ($z$) whose values are i) spatially correlated according to a multivariate Gaussian distribution, and ii) conditioned upon observed (known) values of the residual. This type of analysis can be critical in characterising the uncertainty in ``ShakeMaps'' (i.e. field of ground motion generated from an observed event), which in turn can provide insights into the distribution of expected or, if applied \emph{a posteriori}, observed losses (citeParketal, Crowleyetal2008, Staffordetal2012).
+The extraction of the ground motion residuals from a set of observations also opens up the possibility of implementing another type of calculation that is becoming increasingly common in seismic hazard and risk modelling, and that is conditional random field simulation. These are randomly generated fields of ground motion residuals ($z$) whose values are i) spatially correlated according to a multivariate Gaussian distribution, and ii) conditioned upon observed (known) values of the residual. This type of analysis can be critical in characterising the uncertainty in ``ShakeMaps'' (i.e. field of ground motion generated from an observed event), which in turn can provide insights into the distribution of expected or, if applied \emph{a posteriori}, observed losses \citep[e.g.][]{Park_etal2007, Crowley_etal2008b, Stafford2012}.
 
-It has been well-established from observations of densely recorded earthquakes, that ground motion residuals are spatially correlated when stations are separated by distances typically on the order of a few tens of kilometres (cite Boore2003, JayaramBaker2008). Given the assumption of lognormality in the GMPEs, it is has also been demonstrated appropriate to model the spatial correlation in ground motion residual between two or more sites using a multivariate Gaussian distribution (cite JayaramBaker2009). The coeffiecient of correlation between two sites separated by a distance $h$ ($\rho \left( h \right)$) is shown to decay exponentially with distance such that:
+It has been well-established from observations of densely recorded earthquakes, that ground motion residuals are spatially correlated when stations are separated by distances typically on the order of a few tens of kilometres \citep{Jayaram2009}. Given the assumption of lognormality in the GMPEs, it is has also been demonstrated appropriate to model the spatial correlation in ground motion residual between two or more sites using a multivariate Gaussian distribution \citep{JayaramBaker2009}. The coeffiecient of correlation between two sites separated by a distance $h$ ($\rho \left( h \right)$) is shown to decay exponentially with distance such that:
 
 \begin{equation}
 \rho \left( h \right) = \exp \left( {\frac{-a\left(T\right) h}{b \left(T\right)}} \right)
 \end{equation}
 
-\noindent where $a\left( T \right)$ and $b\left( T \right)$ control the shape of the decay and are dependent on the period of ground motion under consideration. One such model of spatial correlation, which we shall use in this example, is that of cite JayaramBaker2009:
+\noindent where $a\left( T \right)$ and $b\left( T \right)$ control the shape of the decay and are dependent on the period of ground motion under consideration. One such model of spatial correlation, which we shall use in this example, is that of cite \cite{Jayaram2009}:
 
 \begin{equation}
 \rho \left( h \right) = \exp\left( {\frac{-3h}{b \left( T \right)}} \right) \quad \text{where} \quad b \left( T \right) = \begin{cases}\begin{cases}
@@ -63,7 +63,7 @@ db1 = cPickle.load(open("./data/LAquila_Database/metadatafile.pkl",
                         "r"))
 \end{python}
 
-In this example we shall consider only the citeAkkaretal2014 GMPE, and just two intensity measures: PGA and $Sa \left( {1.0s} \right)$:
+In this example we shall consider only the \cite{Akkar_etal2014} GMPE, and just two intensity measures: PGA and $Sa \left( {1.0s} \right)$:
 
 \begin{python}[frame=single]
 gmpe_list = ["AkkarEtAlRjb2014"]
@@ -93,7 +93,7 @@ We may be interested to observe the distance trend in these residuals. This is g
 
 Here we see that for both PGA and $Sa \left( {1.0 s} \right)$ the inter-event residual is moderately negative (-0.976 for PGA and -0.235 for $Sa \left( {1.0 s} \right)$), and we observe a clear trend that the ground motions from this earthquake attenuated to a greater extent than that predicted by the GMPE. 
 
-In the present case we have a model of the finite extent of the earthquake rupture. We put this rupture into an OpenQuake xml format\footnote{More information on the OpenQuake scenario rupture format can be found in citeCrowley2013}, as shown below, and save it in the file \verb=laquila_rupture.xml=.
+In the present case we have a model of the finite extent of the earthquake rupture. We put this rupture into an OpenQuake xml format\footnote{More information on the OpenQuake scenario rupture format can be found in \cite{crowley2013}}, as shown below, and save it in the file \verb=laquila_rupture.xml=.
 
 \begin{verbatim}
 <?xml version='1.0' encoding='utf-8'?>

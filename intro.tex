@@ -8,7 +8,7 @@ The widespread adoption of PSHA for site-specific, urban-level and national/regi
 Whilst OpenQuake itself is designed to fullfill the need for open and tested software for PSHA calculation, it does not explicitly address the issue of PSHA model construction. A PSHA model can be broken down into three components: the seismogenic source model(s), the ground motion prediction equations and the logic tree to characterise the model-to-model uncertainty in an equation. GEM is now in the process of endeavouring to extend the OpenQuake development approach to the area of PSHA model construction. It has done so with the development of two ``Modeller's Toolkit's: 
 
 \begin{enumerate}
-\item \textbf{The Hazard Modeller's Toolkit} , a suite of open-source tools for the preparation of seismogenic source models for application in PSHA citeWeatherill2014
+\item \textbf{The Hazard Modeller's Toolkit} , a suite of open-source tools for the preparation of seismogenic source models for application in PSHA \cite{hmtk_guide}
 \item \textbf{The OpenQuake Ground Motion Toolkit}, a suite of open-source tools for analysis and interpretation of observed ground motions and ground motion prediction equations, for the purposes of GMPE selection in PSHA (this document)
 \end{enumerate}
 
@@ -36,10 +36,10 @@ A list of the current functionalities is given in Table \ref{tab:features}.
 \textbf{Feature} & \textbf{Algorithm} \\ \hline
 Ground Motion  &  Retrieve PGA, PGV and PGD \\
 Intensity Measures  &  Response Spectra - Newmark-$\beta$ \\
-  &   Response Spectra - citeNigam Jennings1969 \\
+  &   Response Spectra - \cite{NigamJennings1969} \\
   &   Horizontal Spectra (Geometric Mean, Envelope etc.) \\
   &   Rotate Horizontal Record Pairs \\
-  &   Rotational Spectra (GMRotD, GMRotI) citeBooreetal1996 \\ \hline
+  &   Rotational Spectra (GMRotD, GMRotI) \cite{Boore_etal2006} \\ \hline
 Trellis Plotting & Configure Rupture \\
                  & Compare GMPE Scaling with Magnitude \\
                  & Compare GMPE Scaling with Distance \\
@@ -51,9 +51,9 @@ Observations     & ... measure residual distribution \\
                  & ... view trends with distance \\
                  & ... view trends with $V_{S30}$ \\
                  & ... view trends with event depth \\
-                 & Likelihood Analysis citeScherbaum et al. 2004\\
-                 & Log-likeihood Analysis citeScherbaum etal. 2009\\
-                 & Euclidean Distance-Based Ranking (Cite KaleAkkar2013) \\
+                 & Likelihood Analysis \cite{Scherbaum_etal2004}\\
+                 & Log-likeihood Analysis \cite{Scherbaum_etal2009}\\
+                 & Euclidean Distance-Based Ranking \cite{KaleAkkar2013}\\
                  & Single-Site Residual Analysis \\ \hline
 Hazard Applications & Conditional Field Simulation \\ \hline
 \end{tabular}
