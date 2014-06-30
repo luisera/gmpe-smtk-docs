@@ -72,6 +72,17 @@
   timestamp = {2014.06.05}
 }
 
+@ARTICLE{Atkinson2006,
+  author = {Atkinson, G. M.},
+  title = {Single-Station Sigma},
+  journal = {Bulletin of the Seismological Society of America},
+  year = {2006},
+  volume = {96(2)},
+  pages = {446 - 455},
+  owner = {GW},
+  timestamp = {2014.06.13}
+}
+
 @ARTICLE{BakerJayaram2008,
   author = {Baker, J. W. and Jayaram, N.},
   title = {Correlation of Spectral Acceleration Values from {NGA} Ground Motion
@@ -255,6 +266,33 @@
   publisher = {Taylor \& Francis Group, London},
   owner = {GW},
   timestamp = {2013.05.09}
+}
+
+@ARTICLE{RodriguesMarek_etal2013,
+  author = {Rodriguez-Marek, A. and Cotton, F. and Abrahamson, N. A. and Akkar,
+	S. and Al Atik, L. and Edwards, B. and Montalva, G. A. and Dawood,
+	H. M.},
+  title = {A Model for Single-Station Standard Deviation Using Data from Various
+	Tectonic Regimes},
+  journal = {Bulletin of the Seismological Society of America},
+  year = {2013},
+  volume = {103(6)},
+  pages = {3149 - 3163},
+  owner = {GW},
+  timestamp = {2014.06.13}
+}
+
+@ARTICLE{RodriguezMarek_etal2011,
+  author = {Rodriguez-Marek, A. and Montalva, G. A. and Cotton, F. and Bonilla,
+	F.},
+  title = {Analysis of Single-Station Standard Deviation using the {K}i{K}-{N}et
+	data},
+  journal = {Bulletin of the Seismological Society of America},
+  year = {2011},
+  volume = {101(3)},
+  pages = {1242 - 1258},
+  owner = {GW},
+  timestamp = {2014.06.13}
 }
 
 @ARTICLE{Scherbaum_etal2004,
