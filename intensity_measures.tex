@@ -104,7 +104,117 @@ pga, pgv, pgd, vel_x, disp_x = get_peak_measures(time_step,
 \noindent This function returns the three peak measures as well as the velocity and displacement (if required). The keywords \verb=get_vel= and \verb=get_disp= will, when set to \verb=True=, calculate velocity and displacement.
 
 \subsection{Duration}
+
+The \verb=ims= tools contain functions for calculating the duration of a particular record, based on three different definitions:
+
+\begin{itemize}
+\item \textbf{Bracketed Duration}
+
+This is defined as the time between the first and last exceedance of a given absolute ground motion acceleration level. In this case we use a ground motion acceleration of $20 cm s^{-2}$ as the threshold. This can be called by:
+\begin{python}
+ims.get_bracketed_duration(accel_x, time_step, 20.0)
+\end{python}
+
+\noindent for the example shown in Figure ?.
+
+\item \textbf{Uniform Duration}
+
+This is defined as the total duration of the record for which the absolute acceleration exceeds a given threshold level. The below example will calculate the uniform duration of a record given a threshold of $20 cm s^{-2}$, with the example shown in Figure ?.
+
+\begin{python}
+ims.get_uniform_duration(accel_x, time_step, 20.0)
+\end{python}
+
+\item \textbf{Significant Duration}
+
+This is defined as the time between specified fractions of the cumulative Arias integral:
+\begin{equation}
+Ia = \int\limits_0^{T_d} \left[ {a \left( t \right)}\right]^2 dt
+\end{equation}
+Commonly the specified fractions are 0.05 and 0.95. The signficant duration for 0.05 to 0.95 Arias Intensity is returned by:
+
+\begin{python}
+ims.get_significant_duration(accel_x, time_step,
+                             0.05, 0.95)
+\end{python}
+
+To see how the cumulative Arias integral is varies with time of the record we can produce a ``Husid'' plot. This can be called using the function \verb=plot_husid=, and the result shown in Figure ?.
+
+\begin{python}
+ims.plot_husid(accel_x,
+               time_step,
+               start_level=0.05,
+               end_level=0.95)
+\end{python}
+
+The \verb=start_level= and \verb=end_level= indicate which range of the Husid plot to highlight.
+
+\end{itemize}
+
 \subsection{Other Scalar Measures}
+
+The following are parameters derived from integration of the acceleration time series. Such intensity measures are therefore influenced not just by the strength of shaking, but also the duration. These parameters may often correlate better with structural damage.
+
+\subsubsection{Arias Intensity ($I_a$)}
+
+\begin{equation}
+I_a =\frac{\pi}{2g} \int\limits_0^{\infty} \left[ {a \left( t \right)}\right]^2 dt
+\end{equation}
+
+\noindent where $a \left( t \right)$ is the time series and $g$ the acceleration due to gravity. It is measured in units of $cm s^{-1]}$. The Arias intensity of a record can be calculated via:
+
+\begin{python}
+ims.get_arias_intensity(accel_x,
+                        time_step)
+\end{python}
+
+If, alternatively, on wishes to limit the Arias Intensity to just the significant duration of the record, this can be done via:
+
+\begin{python}
+ims.get_arias_intensity(accel_x,
+                        time_step,
+                        start_level=0.05,
+                        end_level=0.95)
+\end{python}
+
+\subsubsection{Root Mean Square Acceleration ($a_{rms}$)}
+
+The root mean square acceleration is simular to the Arias Intensity, albeit dependent on the definition of the record duration: 
+
+\begin{equation}
+a_{rms} =\sqrt{\frac{1}{T_d}\int\limits_0^{T_d} \left[ {a \left( t \right)}\right]^2 dt}
+\end{equation}
+
+This can be called via:
+
+\begin{python}
+ims.get_arms(accel_x, time_step)
+\end{python}
+
+
+\subsubsection{Cumulative Absolute Velocity ($CAV$)}
+
+Cumulative absolute velocity is essentially defined as the area under the absolute accelerogram. It can be defined using the full accelerogram; however, studies such as KramerMitchell2006 found that a closer correlation with liquefaction potential was obtained when limiting the integral to absolute acceleration values greater than a threshold value (e.g. $5 cm s^{-2}$). Therefore we define the more general CAV for a threshold absolute acceleration ($CAV_n$)
+
+\begin{equation}
+CAV_n = \int\limits_0^{T_d} H\left[ {|a \left( t \right)| - n} \right] dt
+\end{equation}
+
+\noindent where $H\left[ x \right]$ is the Heaviside function taking a value of 1 when the term $x$ is positive and 0 otherwise.
+
+This can be called via:
+
+\begin{python}
+ims.get_cav(accel_x, time_step)
+\end{python}
+
+\noindent for the general case and:
+
+\begin{python}
+ims.get_cav(accel_x, time_step, threshold=5.0)
+\end{python}
+
+to derive $CAV_5$.
 
 \section{Response Spectra}
 \label{sec:response_spectra}
@@ -301,6 +411,41 @@ For the two spectra considered here, the geometric mean spectra and the envelope
 	\label{fig:envelope}
 \end{figure}
 
+\subsection{Scalar Spectral Measures}
+
+In addition to scalar intensity measures derived from the time-series of the record, two common quantitative indicators exist to identify the strength of shaking over a range of periods of structural interest.
+
+\subsubsection{Spectrum Intensity ($SI$)}
+
+This is the area under the pseudo-velocity spectrum, for a given level of daming ($\xi$) between the periods 0.1 and 2.5. This has been shown to be a relatively efficient intensity measure in evaluating the response of intermediate-period structures and geotechnical elements (e.g. liquefaction)
+
+\begin{equation}
+SI \left( {\xi} \right) = \int\limits_{0.1}^{2.5} PSv \left( {\xi, T} \right) dT
+\end{equation}
+
+$SI$ can be calculated from a response spectrum output as follows:
+
+\begin{python}
+# From the x-component
+s_i = ims.get_response_spectrum_intensity(spectra_x)
+\end{python}
+
+\subsubsection{Acceleration Spectrum Intensity ($ASI$)}
+
+Similar to the spectrum intensity, the acceleration spectrum intensity can sometimes be more pertinent for stiffer structures responding to shorter period motion:
+
+\begin{equation}
+ASI = \int\limits_{0.1}^{0.5} Sa \left( {\xi=0.05, T} \right) dT
+\end{equation}
+
+$ASI$ can be calculated from the response spectrum output as follows:
+
+\begin{python}
+# From the x-component
+asi = ims.get_acceleration_spectrum_intensity(spectra_x)
+\end{python}
+
+
 \section{Rotation of the Horizontal Records}
 
 In some applications it may be necessary to rotate a pair of horizontal time series, either to orient them into fault-normal and fault-parallel components, or to some direction that may represent the most adverse for a particular structure. For two time series of equal duration and time series, the records can be rotated through angle $\theta$:
@@ -337,6 +482,67 @@ gmroti50 = ims.gmrotipp(accel_x, time_step,
                         units="cm/s/s",
                         method="Nigam-Jennings")
 \end{python}
+
+\subsection{Principal Axes of a Set of Records}
+
+For a multicomponent record (horizontal or horizontal plus vertical) the principal axes of the record are the axes along which the correlation between the components is null, and therefore the three directions will correspond to the directions of maximum, intermediate and minimum quadratic intensity respectively. Such time-series can serve a useful purpose in structural analysis when applying multicomponent records in three dimensional analyses of structures. 
+
+Consider a multi-component set of records given by $a_x \left( t \right)$,  $a_y \left( t \right)$ and $a_z \left( t \right)$. The records must be rotated such that the correlation between each of the components is null To find such a rotation first define the following symmetric matrix:
+ 
+\begin{equation}
+\mathbf{\sigma} = \begin{bmatrix}
+\sigma_{xx} & \sigma_{xy} & \sigma_{xz} \\
+\sigma_{yx} & \sigma_{yy} & \sigma_{yz} \\
+\sigma_{zx} & \sigma_{zy} & \sigma_{zz} \\
+\end{bmatrix}
+\end{equation}
+
+\noindent where $\sigma_{ij}$ is the quadratic intensity of a pair of time-series, defined by:
+\begin{equation}
+\sigma_{ij} = \frac{1}{s} \int_0^s a_i \left( t \right) a_j \left( t \right) dt
+\end{equation}
+
+\noindent for $i=x,y,z$ and $j=x,y,z$. Next find the eigenvectors of the $\mathbf{\sigma}$ matrix, which can be stacked in the matrix $\mathbf{\phi^T}$. Transform the three time-series to return the corresponding time series $a_1 \left( T \right)$, $a_3 \left( T \right)$ and $a_3 \left( T \right)$, which correspond to the time-series aligned to the principal axes of the record:
+
+\begin{equation}
+\begin{Bmatrix} a_1 \left( t \right) \\ a_2 \left( t \right) \\ a_3 \left( t \right)\end{Bmatrix} = \mathbf{\phi^T} \begin{Bmatrix} a_x \left( t \right) \\ a_y \left( t \right) \\ a_z \left( t \right)\end{Bmatrix}
+\end{equation}
+
+Consequently the quadratic intensity matrix for the transformed time series is thus:
+
+\begin{equation}
+\mathbf{\sigma_p} = \begin{bmatrix}
+\sigma_{11} & 0 & 0 \\
+0 & \sigma_{22} & 0 \\
+0 & 0 & \sigma_{33} \\
+\end{bmatrix}
+\end{equation}
+
+Figure \ref{fig:principal_axes} shows how a pair of horizontal time-series and their corresponding spectra are modified by transformation along the principal axes.
+
+\begin{figure}[htb]
+	\centering
+		\includegraphics[width=\textwidth]{./figures/ims/PrincipalAxesExample.pdf}
+	\caption{Comparison of the time series (top) and pseudo-acceleration spectra (bottom) for the original time series (blue) and the principal acceleration time series (red) for a pair of horizontal records}
+	\label{fig:principal_axes}
+\end{figure}
+
+To derive the time-series of the principal axes oriented records from a two- or three-component set of records, simply run the following:
+
+\begin{python}
+# For the two horizontal components
+acc_1, acc_2, _ = ims.get_principal_axes(time_step,
+                                         accel_x,
+                                         accel_y)
+# For the three components
+acc_1, acc_2, acc_3 = ims.get_principal_axes(time_step,
+                                             accel_x,
+                                             accel_y,
+                                             accel_z)
+\end{python}
+
+In this case the time-step of the three records must be the same. Ideally, the length of all the records should also be identical. If this is not the case then the function will only consider the time-series up to the duration of the shortest record. This assumes implicitly that the start-time of the two or three records is the same. If this is not the case it is strongly recommended to zero-pad whichever records are starting later to ensure the record length is the same. 
+
 
 
 \section{Adding Horizontal Components to the Database}

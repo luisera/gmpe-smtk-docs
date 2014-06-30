@@ -184,9 +184,9 @@ Depending on the information supplied, particularly with respect to the finite r
 \section{Missing Metadata!}
 \label{sec:missing_metadata}
 
-One of the greatest challenges in construction of a strong motion database is to address the cases where critical (i.e. non-optional) metadata are missing from the record. 
+%One of the greatest challenges in construction of a strong motion database is to address the cases where critical (i.e. non-optional) metadata are missing from the record. 
 
-\textbf{TODO - More to add!}
+\textbf{TODO - More feedback is needed from users on appropriate methods for obtaining missing metadata!}
 
 \section{The HDF5 Strong Motion Database}
 \label{sec:hdf5}
@@ -273,15 +273,15 @@ The keyword \verb=as_db= tells the function whether to return the selected recor
 
 The \verb=SMRecordSelector= has the following selection methods
 \begin{itemize}
-\item \verb;select_from_record_id(self, record_id);\\
+\item \verb;select_from_record_id(record_id);\\
 
 Selects a record according to its waveform ID.
 
-\item \verb;select_from_event_id(self, event_id, as_db=False);\\
+\item \verb;select_from_event_id(event_id, as_db=False);\\
 
 Returns a set of records from a common event defined by its \verb=event_id=.
 
-\item \verb;select_within_time(self, start_time=None, end_time=None, as_db=False);\\
+\item \verb;select_within_time(start_time=None, end_time=None, as_db=False);\\
 
 Selects records within a specific time window, defined as the interval between \verb=start_time= and \verb=end_time= (both Python datetime objects). For example:
 
@@ -292,16 +292,16 @@ db2 = selector.select_within_time(datetime(1990, 1, 1),
                                   as_db=True)
 \end{python}
 
-\item \verb;select_within_depths(self, upper_depth=None,;\\
+\item \verb;select_within_depths(upper_depth=None,;\\
 \verb;    lower_depth=None, as_db=False);\\
 
 Selects records corresponding to events within a specific depth range defined as the interval between \verb=upper_depth= (km) and \verb=lower_depth= (km). If not specified \verb=upper_depth= defaults to zero, and lower depth defaults to $\infty$. Records missing a hypocentral depth will not be selected, therefore setting both limits to \verb=None= will effectively filter these records out of the database.
 
-\item \verb;select_within_magnitude(self, lower=None, upper=None, as_db=False);\\
+\item \verb;select_within_magnitude(lower=None, upper=None, as_db=False);\\
 
 Select records corresponding to events within a magnitude range, defined as the interval between \verb=lower= (defaults to $-\infty$ if not specified) and \verb=upper= (defaults to $\infty$ if not specified).
 
-\item \verb;select_by_station_country(self, country, as_db=False);\\
+\item \verb;select_by_station_country(country, as_db=False);\\
 
 Returns the records within a specific country (input as a string). For example, to select only observations recorded in Italy:
 
@@ -310,7 +310,7 @@ db2 = selector.select_by_station_country("Italy",
                                          as_db=True)
 \end{python}
 
-\item \verb;.select_by_site_attribute(self, attribute, value, as_db=False);\\
+\item \verb;select_by_site_attribute(attribute, value, as_db=False);\\
 
 Select records corresponding to a particular site attribute (according the attributes listed in the \verb=RecordSite= class). For example to select records only recorded at ``Free-Field'' stations:
 
@@ -320,11 +320,11 @@ db2 = selector.select_by_site_attribute("building_structure",
                                         as_db=True)
 \end{python}
 
-\item \verb;select_within_vs30_range(self, lower_vs30, upper_vs30, as_db=False);\\
+\item \verb;select_within_vs30_range(lower_vs30, upper_vs30, as_db=False);\\
 
 Select records within a given Vs30 range defined as the interval between \verb=lower_vs30= and \verb=upper_vs30=, which default to $-\infty$ and $\infty$ if not specified. As with the depth selection, setting both \verb=lower_vs30= and \verb=upper_vs30= to \verb=None= will remove records missing $V_{S30}$ values from the database. 
 
-\item \verb;select_stations_within_distance(self, location, distance, as_db=False);\\
+\item \verb;select_stations_within_distance(location, distance, as_db=False);\\
 
 Selects records from stations within a distance (km) of a specified location. The location must be input as an instance of an OpenQuake ``Point'' class. For example, to select records within 200 km of $30^{\circ}$E and $40^{\circ}$N:
 
@@ -336,7 +336,7 @@ db2 = selector.select_stations_within_distance(location,
                                                as_db=True)
 \end{python}
 
-\item \verb;select_stations_within_region(self, region, as_db=False);\\
+\item \verb;select_stations_within_region(region, as_db=False);\\
 
 Selects station inside of a specified region defined by a polygon. The polygon must be input as an instance of the OpenQuake Polygon class. For example, to select all ground motions recorded within a square bounded by $30^{\circ}$E to $40^{\circ}$E and $20^{\circ}$N to $40^{\circ}$N:
 
@@ -352,7 +352,7 @@ db2 = selector.select_stations_within_region(region,
                                              as_db=True)
 \end{python}
 
-\item \verb;select_within_distance_range(self, distance_type, shortest, furthest,;\\
+\item \verb;select_within_distance_range(distance_type, shortest, furthest,;\\
 \verb;    alternative=False, as_db=False);\\
 Select records based on a source to site distance range, with the distance type specified by \verb=distance_type=, within the interval \verb=shortest= (defaults to 0 if not specified) and \verb=furthest= (defaults to $\infty$ if not specified). Recognising the possibility that some distance metric may be missing it is possible to also specify a second metric and corresponding distance limits as a tuple via the
 \verb=alternative= keyword. For example, select records within a Joyner-Boore distance of 5 km and 50 km, and, if Joyner-Boore distance is not specified select records within an epicentral distance of 10 km and 70 km.
@@ -372,27 +372,21 @@ db2 = selector.select_mechanism_type("strike-slip",
                                      as_db=True) 
 \end{python}
 
-\item \verb;select_event_country(self, country, as_db=False);\\
+\item \verb;select_event_country(country, as_db=False);\\
 
 Select records corresponding to events whose epicentres occur within a specific country
 
-\item \verb;select_epicentre_within_distance_from_point(self, location, distance,;\\
+\item \verb;select_epicentre_within_distance_from_point(location, distance,;\\
 \verb;    as_db=False);\\
 
 Selects records from earthquakes whose epicentres are within a distance of a point. The point must be input as an instance of the OpenQuake ``Point'' class.
 
-\item \verb;select_epicentre_within_region(self, region, as_db=False);\\
+\item \verb;select_epicentre_within_region(region, as_db=False);\\
 
 Selects records from event inside the specified region. The region must be defined as an instance of the OpenQuake ``Polygon'' class.
 
-\item \verb;select_longest_usable_period(self, lup, as_db=False);\\
+\item \verb;select_longest_usable_period(lup, as_db=False);\\
 
 Selects records with a longest usable period greater than or equal to \verb=lup= (in seconds)
 
 \end{itemize}
-
-  
-
-
-
-
